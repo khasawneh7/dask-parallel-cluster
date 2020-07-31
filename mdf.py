@@ -24,6 +24,9 @@ def mdf(Y,K):
         z_k_beta = z_k**beta_[kk]
 
         JE = JE + (lambda_[kk] * (((N-1)*a_[kk])**beta_[kk])/N) * np.sum(z_k_beta)
+        
+        return JE
+        
 '''        if O.eta(kk) ~= 1
             JF = JF + (1 - O.eta(kk)) * (log(O.N-1)+log(O.a(kk))) + ((1 - O.eta(kk))/O.N) * sum(log(z_k));
         end
