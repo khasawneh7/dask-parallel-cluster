@@ -1,13 +1,15 @@
 import numpy as np
+from scipy.special import gamma
 
 def mdf(Y,K):
     beta_ = np.ones(K)
     eta_ = np.ones(K)
     lambda_ = 0.5*np.ones(K)
+    nu_ = (2*eta_ + len(Y) - 2)/(2*beta_)
+    a_ = (lambda_**(-1/beta_) * gamma(nu_ + 1/beta_)) / (len(Y) * gamma(nu_))
 
     _, N = Y[0].shape
-    #% 1st and 2nd TERMS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    #% Sum of subspace entropies %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
     for kk in range(K):
         y_sub = np.zeros((len(Y),N))
         tot = 0
@@ -21,8 +23,8 @@ def mdf(Y,K):
         z_k = np.sum(y_sub * A, axis=0)
         z_k_beta = z_k**beta_[kk]
 
-        JE = JE + (O.lambda_(kk) * (((O.N-1)*O.a(kk))^O.beta(kk))/O.N) * sum(z_k_beta);
-        if O.eta(kk) ~= 1
+        JE = JE + (lambda_[kk] * (((N-1)*a_[kk])**beta_[kk])/N) * np.sum(z_k_beta)
+'''        if O.eta(kk) ~= 1
             JF = JF + (1 - O.eta(kk)) * (log(O.N-1)+log(O.a(kk))) + ((1 - O.eta(kk))/O.N) * sum(log(z_k));
         end
         JC = JC + sum(log(D)); % Moved  -0.5*log(O.N-1)*sum(O.d) to fc below
@@ -93,3 +95,4 @@ def mdf(Y,K):
     #%             clear D
 
     J = JE + JF + JC + JD + fc;
+                        '''
