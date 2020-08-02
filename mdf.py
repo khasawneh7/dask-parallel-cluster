@@ -1,6 +1,57 @@
 import numpy as np
 from scipy.special import gamma
 
+def mdf_dask_tall_eval(data_dict):
+    JE = 0 
+     
+    beta_ = data_dict['beta_']
+    eta_ = data_dict['eta_']
+    lambda_ = data_dict['lambda_']
+    nu_ = data_dict['nu_']
+    a_ = data_dict['a_']
+    y_sub = data_dict['y_sub']
+    
+    _, N = y_sub.shape
+   
+    D, t1 = np.linalg.eig(y_sub @ y_sub.T)
+    A = ((t1 * (1 / D[None,:])) @ t1.T) @ y_sub
+    z_k = np.sum(y_sub * A, axis=0)
+    z_k_beta = z_k**beta_
+
+    JE += (lambda_ * (((N-1)*a_)**beta_)/N) * np.sum(z_k_beta)
+    
+    return JE
+
+
+def mdf_dask_tall(client,Y,K):
+    
+    beta_ = np.ones(K)
+    eta_ = np.ones(K)
+    lambda_ = 0.5*np.ones(K)
+    nu_ = (2*eta_ + len(Y) - 2)/(2*beta_)
+    a_ = (lambda_**(-1/beta_) * gamma(nu_ + 1/beta_)) / (len(Y) * gamma(nu_))
+
+    _, N = Y[0].shape
+    
+    data_map = []
+    
+    for kk in range(K):
+        y_sub = np.zeros((len(Y),N))
+        tot = 0
+        for mm in range(len(Y)):
+            ix = tot + 1
+            y_sub[ix-1,:] = Y[mm][kk,:]
+            tot = tot + 1
+            
+        data_map.append(client.map(mdf_dask_tall_eval,[{'beta_':beta_[kk],
+                                                       'eta_':eta_[kk],
+                                                       'lambda_':lambda_[kk],
+                                                       'nu_':nu_[kk],
+                                                       'a_':a_[kk],
+                                                       'y_sub':y_sub}]))
+
+    return client.submit(np.sum,data_map)
+
 def mdf(Y,K):
     JE = 0 
     
