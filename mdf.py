@@ -2,6 +2,8 @@ import numpy as np
 from scipy.special import gamma
 
 def mdf(Y,K):
+    JE = 0 
+    
     beta_ = np.ones(K)
     eta_ = np.ones(K)
     lambda_ = 0.5*np.ones(K)
@@ -22,10 +24,10 @@ def mdf(Y,K):
         A = ((t1 * (1 / D[None,:])) @ t1.T) @ y_sub
         z_k = np.sum(y_sub * A, axis=0)
         z_k_beta = z_k**beta_[kk]
-
-        JE = JE + (lambda_[kk] * (((N-1)*a_[kk])**beta_[kk])/N) * np.sum(z_k_beta)
         
-        return JE
+        JE += (lambda_[kk] * (((N-1)*a_[kk])**beta_[kk])/N) * np.sum(z_k_beta)
+        
+    return JE
         
 '''        if O.eta(kk) ~= 1
             JF = JF + (1 - O.eta(kk)) * (log(O.N-1)+log(O.a(kk))) + ((1 - O.eta(kk))/O.N) * sum(log(z_k));
